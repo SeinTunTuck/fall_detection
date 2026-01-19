@@ -246,9 +246,13 @@ class FallDetector:
                 self._process_pi_camera(output_path, display)
                 return
             else:
-                print("Falling back to default camera...")
+                print("Falling back to USB/default camera...")
                 self.use_pi_camera = False
                 video_source = 0  # Use default camera
+        
+        # Default to camera 0 if no source specified
+        if video_source is None:
+            video_source = 0
         
         # Use webcam as fallback
         self._process_webcam(video_source, output_path, display)
