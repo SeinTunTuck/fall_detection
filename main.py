@@ -77,6 +77,9 @@ class FallDetector:
             )
             self.camera.configure(config)
             self.camera.start()
+            # Warmup: let camera adjust white balance and gain
+            print("  Warming up camera (2 seconds)...")
+            time.sleep(2)
             print("✓ Pi Camera initialized successfully")
             return True
         except Exception as e:
