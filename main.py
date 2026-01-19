@@ -73,20 +73,13 @@ class FallDetector:
         try:
             self.camera = Picamera2()
             
-            # Create configuration with explicit RGB format
-            config = self.camera.create_preview_configuration(
-                main={"size": (640, 480), "format": "BGR888"}
+            # Use video configuration with RGB888 (proven to work)
+            config = self.camera.create_video_configuration(
+                main={"size": (640, 480), "format": "RGB888"}
             )
             self.camera.configure(config)
             self.camera.start()
-            
-            # Warmup: let camera adjust white balance and gain
-            print("  Warming up camera (2 seconds)...")
-            time.sleep(2)
-            
-            # Test capture to verify it works
-            test_frame = self.camera.capture_array()
-            print(f"  Frame shape: {test_frame.shape}, dtype: {test_frame.dtype}")
+            time.sleep(0.2)  # Brief warmup
             
             print("✓ Pi Camera initialized successfully")
             return True
@@ -279,18 +272,16 @@ class FallDetector:
         
         try:
             while True:
-                # Capture frame from Pi Camera
+                # Capture frame from Pi Camera (returns RGB)
                 frame = self.camera.capture_array()
                 
-                # No color conversion needed if using BGR888
-                if frame is None or frame.size == 0:
-                    print("Warning: Empty frame captured")
-                    continue
+                # Convert RGB to BGR for OpenCV
+                frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
                 
                 frame_count += 1
                 
                 # Process frame
-                annotated_frame, is_fall, person_count = self.detect_fall(frame)
+                annotated_frame, is_fall, person_count = self.detect_fall(frame_bgr)
                 
                 # Update fall counter
                 if is_fall:
