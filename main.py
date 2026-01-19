@@ -308,7 +308,7 @@ class FallDetector:
                         break
                 
                 # Throttle to ~15 FPS for Pi performance
-                time.sleep(0.066)
+                time.sleep(0.033)
         
         except KeyboardInterrupt:
             print("\nInterrupted by user")
