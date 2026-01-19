@@ -72,11 +72,14 @@ class FallDetector:
         """Initialize Raspberry Pi Camera."""
         try:
             self.camera = Picamera2()
+            
+            # Use the default preview configuration which handles color correctly
             config = self.camera.create_preview_configuration(
-                main={"format": 'XRGB8888', "size": (640, 480)}
+                main={"size": (640, 480), "format": "RGB888"}
             )
             self.camera.configure(config)
             self.camera.start()
+            
             # Warmup: let camera adjust white balance and gain
             print("  Warming up camera (2 seconds)...")
             time.sleep(2)
@@ -84,6 +87,8 @@ class FallDetector:
             return True
         except Exception as e:
             print(f"✗ Pi Camera initialization failed: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def detect_fall(self, frame):
@@ -271,7 +276,10 @@ class FallDetector:
             while True:
                 # Capture frame from Pi Camera
                 frame = self.camera.capture_array()
-                frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2BGR)
+                
+                # Convert RGB888 to BGR for OpenCV
+                if len(frame.shape) == 3 and frame.shape[2] == 3:
+                    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
                 
                 frame_count += 1
                 
