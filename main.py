@@ -73,14 +73,21 @@ class FallDetector:
         try:
             self.camera = Picamera2()
             
-            # Use default configuration which uses YUV420 (what the camera outputs)
-            config = self.camera.create_preview_configuration()
+            # Create configuration with explicit RGB format
+            config = self.camera.create_preview_configuration(
+                main={"size": (640, 480), "format": "BGR888"}
+            )
             self.camera.configure(config)
             self.camera.start()
             
             # Warmup: let camera adjust white balance and gain
             print("  Warming up camera (2 seconds)...")
             time.sleep(2)
+            
+            # Test capture to verify it works
+            test_frame = self.camera.capture_array()
+            print(f"  Frame shape: {test_frame.shape}, dtype: {test_frame.dtype}")
+            
             print("✓ Pi Camera initialized successfully")
             return True
         except Exception as e:
@@ -272,12 +279,13 @@ class FallDetector:
         
         try:
             while True:
-                # Capture frame from Pi Camera (returns RGB by default in Picamera2)
-                frame = self.camera.capture_array("main")
+                # Capture frame from Pi Camera
+                frame = self.camera.capture_array()
                 
-                # Convert RGB to BGR for OpenCV
-                if len(frame.shape) == 3 and frame.shape[2] == 3:
-                    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                # No color conversion needed if using BGR888
+                if frame is None or frame.size == 0:
+                    print("Warning: Empty frame captured")
+                    continue
                 
                 frame_count += 1
                 
