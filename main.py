@@ -73,10 +73,8 @@ class FallDetector:
         try:
             self.camera = Picamera2()
             
-            # Use the default preview configuration which handles color correctly
-            config = self.camera.create_preview_configuration(
-                main={"size": (640, 480), "format": "RGB888"}
-            )
+            # Use default configuration which uses YUV420 (what the camera outputs)
+            config = self.camera.create_preview_configuration()
             self.camera.configure(config)
             self.camera.start()
             
@@ -274,10 +272,10 @@ class FallDetector:
         
         try:
             while True:
-                # Capture frame from Pi Camera
-                frame = self.camera.capture_array()
+                # Capture frame from Pi Camera (returns RGB by default in Picamera2)
+                frame = self.camera.capture_array("main")
                 
-                # Convert RGB888 to BGR for OpenCV
+                # Convert RGB to BGR for OpenCV
                 if len(frame.shape) == 3 and frame.shape[2] == 3:
                     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
                 
