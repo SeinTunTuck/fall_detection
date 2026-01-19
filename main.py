@@ -242,14 +242,16 @@ class FallDetector:
         # Try to use Pi Camera if available
         if self.use_pi_camera and video_source is None:
             print("Attempting to use Raspberry Pi Camera...")
-            if not self._init_pi_camera():
+            if self._init_pi_camera():
+                self._process_pi_camera(output_path, display)
+                return
+            else:
                 print("Falling back to default camera...")
                 self.use_pi_camera = False
+                video_source = 0  # Use default camera
         
-        if self.use_pi_camera and self.camera:
-            self._process_pi_camera(output_path, display)
-        else:
-            self._process_webcam(video_source, output_path, display)
+        # Use webcam as fallback
+        self._process_webcam(video_source, output_path, display)
     
     def _process_pi_camera(self, output_path=None, display=True):
         """Process video from Pi Camera."""
